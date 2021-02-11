@@ -24,13 +24,10 @@ class SteamScraper:
 
         :return: Dictionary of mod name and ID
         """
-        # base_url = f'https://steamcommunity.com/id/{self._user.username}/myworkshopfiles/?appid={self._arksurvival_app_id}&browsefilter=mysubscriptions&p={str(page)}&numberpage=30'
-        base_url = f'https://steamcommunity.com/id/{self._user.username}/myworkshopfiles/'
-        steam_url = self.parse_userid(url=base_url)
+        steam_url = self.parse_userid()
         page = 1
         while True:
             # regardless of numberpage setting, always seem to get 10 at a time through API
-            # base_url = f'https://steamcommunity.com/id/{self._user.username}/myworkshopfiles/?appid={self._arksurvival_app_id}&browsefilter=mysubscriptions&p={str(page)}&numberpage=30'
             base_url = f'{steam_url}/?appid={self._arksurvival_app_id}&browsefilter=mysubscriptions&p={str(page)}&numberpage=30'
             rawdata = self._user.session.get(base_url)
             rawtext = rawdata.text
@@ -40,16 +37,18 @@ class SteamScraper:
             page += 1
         return self._results
 
-    def parse_userid(self, *, url: str) -> str:
+    def parse_userid(self) -> str:
         """
         It seems you have to use the Steam ID to get subscribed items, NOT the mere username.
         So, first you have to get the URL, which it fill in itself, then do it all with THAT URL.
 
-        Do the actual scraping magic with help of BeautifulSoup.
+        For some reason, despite testing, we had to use a full query URL with the *username* and
+        only then do we get the correct base URL with the Steam ID.
 
         :param url: The start URL from which to get the actual URL with ID
         :return: The base URL with the proper Steam ID
         """
+        url = f'https://steamcommunity.com/id/{self._user.username}/myworkshopfiles/?appid={self._arksurvival_app_id}&browsefilter=mysubscriptions&p=1&numberpage=30'
         rawdata = self._user.session.get(url)
         return rawdata.url
 
