@@ -28,7 +28,7 @@ def args_handler():
                            help='Password',
                            required=False)
     argparser.add_argument('--mfatoken',
-                           help='2FA token valyue',
+                           help='2FA token value',
                            required=False)
     argparser.add_argument('--prompt',
                            help='Prompt for authentication info',
@@ -52,6 +52,7 @@ def main():
     res = steam.get_data()
     for k, v in res.items():
         if args.arkmanager:
+            print(f'# "{v}" is {k}')
             print(f'arkmod_{k}=game')
         else:
             print(f'{v},{k}')
