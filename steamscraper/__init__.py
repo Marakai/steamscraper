@@ -1,4 +1,4 @@
-from steamscraper.steamscraper import SteamScraper
+from steamscraper.steamapi import SteamScraper
 from importlib.metadata import version as get_version
 
 try:
