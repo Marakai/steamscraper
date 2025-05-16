@@ -1,14 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-
-# work-around for a persistent import issue when running from inside Pycharm
-try:
-    from steamscraper.steamscraper import SteamScraper
-    from steamscraper import version
-except:
-    from steamscraper import SteamScraper
-    import version
+from steamscraper import SteamScraper, __version__
 
 
 def args_handler():
@@ -20,7 +13,7 @@ def args_handler():
     extracting name and addon ID.
     ''')
     argparser.add_argument('-v', '--version', action='version',
-                           version='%(prog)s {version}'.format(version=version.__version__))
+                           version=f'%(prog)s {__version__}')
     argparser.add_argument('--username',
                            help='Steam user name',
                            required=True)
