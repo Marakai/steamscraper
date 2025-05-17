@@ -33,7 +33,7 @@ class TestSteamScraper:
 
     def test_init_with_credentials(self, mock_webauth):
         """Test initialization with username and password."""
-        scraper = SteamScraper(username="test_user", pw="test_pass", mfa="12345")
+        scraper = SteamScraper(userid="test_user", pw="test_pass", mfa="12345")
 
         # Verify WebAuth was called with the correct username
         assert scraper._app_id == "346110"  # Default app ID
@@ -41,14 +41,14 @@ class TestSteamScraper:
 
     def test_init_with_prompt(self, mock_webauth):
         """Test initialization with prompt flag."""
-        scraper = SteamScraper(username="test_user", prompt=True)
+        scraper = SteamScraper(userid="test_user", prompt=True)
 
         # Verify cli_login was called
         mock_webauth.cli_login.assert_called_once()
 
     def test_init_with_custom_appid(self, mock_webauth):
         """Test initialization with custom app ID."""
-        scraper = SteamScraper(username="test_user", pw="test_pass", appid="123456")
+        scraper = SteamScraper(userid="test_user", pw="test_pass", appid="123456")
 
         # Verify app ID was set correctly
         assert scraper._app_id == "123456"
@@ -60,8 +60,8 @@ class TestSteamScraper:
         mock_response.url = "https://steamcommunity.com/id/12345/myworkshopfiles/"
         mock_webauth.session.get.return_value = mock_response
 
-        scraper = SteamScraper(username="test_user", pw="test_pass")
-        result = scraper.parse_userid()
+        scraper = SteamScraper(userid="test_user", pw="test_pass")
+        result = scraper._parse_userid()
 
         # Verify the correct URL was returned
         assert result == "https://steamcommunity.com/id/12345/myworkshopfiles/"
@@ -77,8 +77,8 @@ class TestSteamScraper:
         mock_soup.find_all.return_value = []
         mock_bs4.return_value = mock_soup
 
-        scraper = SteamScraper(username="test_user", pw="test_pass")
-        result = scraper.parse_data(text="<html></html>")
+        scraper = SteamScraper(userid="test_user", pw="test_pass")
+        result = scraper._parse_data(text="<html></html>")
 
         # Verify the correct result was returned
         assert result == 0
@@ -106,8 +106,8 @@ class TestSteamScraper:
         mock_soup.find_all.return_value = [mock_div1, mock_div2]
         mock_bs4.return_value = mock_soup
 
-        scraper = SteamScraper(username="test_user", pw="test_pass")
-        result = scraper.parse_data(text="<html></html>")
+        scraper = SteamScraper(userid="test_user", pw="test_pass")
+        result = scraper._parse_data(text="<html></html>")
 
         # Verify the correct result was returned
         assert result == 2
@@ -125,7 +125,7 @@ class TestSteamScraper:
         mock_response.text = "<html></html>"
         mock_webauth.session.get.return_value = mock_response
 
-        scraper = SteamScraper(username="test_user", pw="test_pass")
+        scraper = SteamScraper(userid="test_user", pw="test_pass")
 
         # Patch the methods
         monkeypatch.setattr(scraper, "parse_userid", mock_parse_userid)
@@ -134,7 +134,7 @@ class TestSteamScraper:
         # Set up the results
         scraper._results = {"12345": "Test Mod 1", "67890": "Test Mod 2", "54321": "Test Mod 3"}
 
-        result = scraper.get_data()
+        result = scraper.subscription_data()
 
         # Verify parse_userid was called
         mock_parse_userid.assert_called_once()

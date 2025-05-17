@@ -13,26 +13,27 @@ class SteamScraper:
     subscribed workshop items for a specific app.
     """
 
-    def __init__(self, *, username: str, pw: str = '', mfa: str = '', prompt: bool = False, appid: str = '346110'):
+    def __init__(self, *, userid: str, pw: str = '', mfa: str = '', prompt: bool = False, appid: str = '346110'):
         """
         Initialize the SteamScraper with authentication details.
 
         Args:
-            username: Steam username
+            userid: Steam username
             pw: Steam password (optional if using prompt)
             mfa: Two-factor authentication code (optional if using prompt)
             prompt: Whether to prompt for authentication interactively
             appid: The Steam Workshop App ID (default is Ark Survival Evolved)
         """
         self._app_id = appid
-        self._user = wa.WebAuth(username)
+        self._user = wa.WebAuth(userid)
+        self._user.steam_id_base = '76561197971835915'
         if prompt:
             self._session = self._user.cli_login()
         else:
             self._session = self._user.login(password=pw, twofactor_code=mfa)
         self._results: Dict[str, str] = {}
 
-    def get_data(self) -> Dict[str, str]:
+    def subscription_data(self) -> Dict[str, str]:
         """
         Connect to Steam URL and get the mod info scraped from the web page.
 
@@ -41,19 +42,20 @@ class SteamScraper:
         Returns:
             Dictionary mapping mod IDs to mod names
         """
-        steam_url = self.parse_userid()
+        steam_url = self._parse_userid()
         page = 1
         while True:
             # Regardless of numberpage setting, always seems to get 10 at a time through API
-            base_url = f'{steam_url}/?appid={self._app_id}&browsefilter=mysubscriptions&p={page}&numberpage=30'
+            # base_url = f'{steam_url}/?appid={self._app_id}&browsefilter=mysubscriptions&p={page}&numberpage=30'
+            base_url = f'{steam_url}&p={page}&numberpage=30'
             response = self._user.session.get(base_url)
-            counter = self.parse_data(text=response.text)
+            counter = self._parse_data(text=response.text)
             if counter == 0:
                 break
             page += 1
         return self._results
 
-    def parse_userid(self) -> str:
+    def _parse_userid(self) -> str:
         """
         Get the Steam ID URL for subscribed items.
 
@@ -63,11 +65,14 @@ class SteamScraper:
         Returns:
             The base URL with the proper Steam ID
         """
-        url = f'https://steamcommunity.com/id/{self._user.username}/myworkshopfiles/?appid={self._app_id}&browsefilter=mysubscriptions&p=1&numberpage=30'
+        # url = f'https://steamcommunity.com/id/{self._user.username}/myworkshopfiles/?appid={self._app_id}&browsefilter=mysubscriptions&p=1&numberpage=30'
+        url = f'https://steamcommunity.com/id/{self._user.steam_id}/myworkshopfiles/?appid={self._app_id}&browsefilter=mysubscriptions'
+        # url = 'https://steamcommunity.com/id/marakai666/myworkshopfiles/?appid=346110&browsefilter=mysubscriptions'
+        # url = 'https://steamcommunity.com/id/76561197971835915/myworkshopfiles/?appid=346110&browsefilter=mysubscriptions'
         response = self._user.session.get(url)
         return response.url
 
-    def parse_data(self, *, text: str) -> int:
+    def _parse_data(self, *, text: str) -> int:
         """
         Parse the HTML data to extract workshop item information.
 

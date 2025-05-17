@@ -45,10 +45,10 @@ def args_handler():
 def main():
     args, ap = args_handler()
     if args.prompt:
-        steam = SteamScraper(username=args.username, prompt=True, appid=args.appid)
+        steam = SteamScraper(userid=args.username, prompt=True, appid=args.appid)
     else:
-        steam = SteamScraper(username=args.username, pw=args.password, mfa=args.mfatoken, appid=args.appid)
-    res = steam.get_data()
+        steam = SteamScraper(userid=args.username, pw=args.password, mfa=args.mfatoken, appid=args.appid)
+    res = steam.subscription_data()
     for k, v in res.items():
         if args.arkmanager:
             print(f'# "{v}" is {k}')
