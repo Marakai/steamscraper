@@ -9,23 +9,18 @@ testing for other apps!
 #### Usage
 
 ```
-usage: steamscraper [-h] [-v] --username USERNAME [--password PASSWORD]
-                    [--mfatoken MFATOKEN] [--prompt] [--appid APPID]
-                    [--arkmanager]
+usage: steamscraper [-h] [-v] [--config CONFIG] [--appid APPID] [--arkmanager]
 
     Grab subscribed workshop addons from Steam Workshop (default is to grab them for Ark Survival Evolved).
 
     Authenticates to Steam Store with 2FA (only, for now) then looks for all the subscribed addons, 
     extracting name and addon ID.
-    
+
 
 optional arguments:
   -h, --help           show this help message and exit
   -v, --version        show program's version number and exit
-  --username USERNAME  Steam user name
-  --password PASSWORD  Password
-  --mfatoken MFATOKEN  2FA token valyue
-  --prompt             Prompt for authentication info
+  --config CONFIG      Path to the configuration file (default: steam-credentials.conf)
   --appid APPID        The Steam Workshop App ID, which you need to figure out. Default is 346110 for Ark Survival Evolved
   --arkmanager         Issue list in Arkmanager instance config format
 ```

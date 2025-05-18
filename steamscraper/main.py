@@ -2,6 +2,7 @@
 
 import argparse
 from steamscraper.steamapi import SteamScraper
+from steamscraper.config import SteamConfig
 from importlib.metadata import version as get_version
 
 try:
@@ -20,21 +21,9 @@ def args_handler():
     ''')
     argparser.add_argument('-v', '--version', action='version',
                            version=f'%(prog)s {__version__}')
-    argparser.add_argument('--username',
-                           help='Steam user name',
-                           required=True)
-    argparser.add_argument('--password',
-                           help='Password',
-                           required=False)
-    argparser.add_argument('--mfatoken',
-                           help='2FA token value',
-                           required=False)
-    argparser.add_argument('--prompt',
-                           help='Prompt for authentication info',
-                           required=False, default=False, action='store_true')
-    argparser.add_argument('--appid',
-                           help='The Steam Workshop App ID, which you need to figure out. Default is 346110 for Ark Survival Evolved',
-                           required=False, default='346110')
+    argparser.add_argument('--config',
+                           help='Path to the configuration file (default: steam-credentials.conf)',
+                           required=False, default='steam-credentials.conf')
     argparser.add_argument('--arkmanager',
                            help='Issue list in Arkmanager instance config format',
                            required=False, default=False, action='store_true')
@@ -43,18 +32,20 @@ def args_handler():
 
 
 def main():
-    args, ap = args_handler()
-    if args.prompt:
-        steam = SteamScraper(userid=args.username, prompt=True, appid=args.appid)
-    else:
-        steam = SteamScraper(userid=args.username, pw=args.password, mfa=args.mfatoken, appid=args.appid)
-    res = steam.subscription_data()
-    for k, v in res.items():
-        if args.arkmanager:
-            print(f'# "{v}" is {k}')
-            print(f'arkmod_{k}=game')
-        else:
-            print(f'{v},{k}')
+    args, _ = args_handler()
+    try:
+        config = SteamConfig(config_file=args.config)
+        steam = SteamScraper(config=config)
+        res = steam.subscription_data()
+        for k, v in res.items():
+            if args.arkmanager:
+                print(f'# "{v}" is {k}')
+                print(f'arkmod_{k}=game')
+            else:
+                print(f'{v},{k}')
+    except (FileNotFoundError, ValueError) as e:
+        print(f"Error: {e}")
+        exit(1)
 
 
 if __name__ == '__main__':

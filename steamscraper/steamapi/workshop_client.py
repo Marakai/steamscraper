@@ -1,84 +1,60 @@
 #!/usr/bin/env python3
 
+import steam.webauth as wa
 from typing import Dict
 from bs4 import BeautifulSoup
-import steam.webauth as wa
+from steamscraper.config import SteamConfig
+from steamscraper.steamapi.steamguard import get_steamguard_code
 
 
 class SteamScraper:
-    """
-    A class to scrape Steam Workshop for subscribed addons.
+    """A class to scrape Steam Workshop for subscribed addons.
+    Authenticates with Steam and retrieves information about subscribed workshop items."""
 
-    This class authenticates with Steam and retrieves information about
-    subscribed workshop items for a specific app.
-    """
-
-    def __init__(self, *, userid: str, pw: str = '', mfa: str = '', prompt: bool = False, appid: str = '346110'):
-        """
-        Initialize the SteamScraper with authentication details.
-
+    def __init__(self, config: SteamConfig):
+        """Initialize the SteamScraper with configuration.
         Args:
-            userid: Steam username
-            pw: Steam password (optional if using prompt)
-            mfa: Two-factor authentication code (optional if using prompt)
-            prompt: Whether to prompt for authentication interactively
-            appid: The Steam Workshop App ID (default is Ark Survival Evolved)
+            config: SteamConfig object containing authentication details and settings
         """
-        self._app_id = appid
-        self._user = wa.WebAuth(userid)
-        self._user.steam_id_base = '76561197971835915'
-        if prompt:
-            self._session = self._user.cli_login()
-        else:
-            self._session = self._user.login(password=pw, twofactor_code=mfa)
+
+        self._config = config
+        self._user = wa.WebAuth(config.steamlogin)
+        self._user.steam_id_base = config.steamid
+        self._session = self._user.login(password=config.password, twofactor_code=get_steamguard_code())
+
         self._results: Dict[str, str] = {}
 
     def subscription_data(self) -> Dict[str, str]:
-        """
-        Connect to Steam URL and get the mod info scraped from the web page.
-
+        """Connect to Steam URL and get the mod info scraped from the web page.
         Due to pagination, we loop until there are no more results.
-
         Returns:
             Dictionary mapping mod IDs to mod names
         """
-        steam_url = self._parse_userid()
+
+        url_steamid = f'https://steamcommunity.com/id/{self._config.steamid}/myworkshopfiles/?appid={self._config.appid}&browsefilter=mysubscriptions'
+        url_username = f'https://steamcommunity.com/id/{self._config.username}/myworkshopfiles/?appid={self._config.appid}&browsefilter=mysubscriptions'
+
         page = 1
         while True:
-            # Regardless of numberpage setting, always seems to get 10 at a time through API
-            # base_url = f'{steam_url}/?appid={self._app_id}&browsefilter=mysubscriptions&p={page}&numberpage=30'
-            base_url = f'{steam_url}&p={page}&numberpage=30'
-            response = self._user.session.get(base_url)
-            counter = self._parse_data(text=response.text)
-            if counter == 0:
+            base_url_steamid = f'{url_steamid}&p={page}'
+            base_url_username = f'{url_username}&p={page}'
+            response_steamid = self._session.get(base_url_steamid)
+            response_username = self._session.get(base_url_username)
+
+            counter_steamid = self._parse_data(text=response_steamid.text)
+            if counter_steamid == 0:
+                break
+            page += 1
+            counter_username = self._parse_data(text=response_username.text)
+            if counter_username == 0:
                 break
             page += 1
         return self._results
 
-    def _parse_userid(self) -> str:
-        """
-        Get the Steam ID URL for subscribed items.
-
-        Steam requires the actual Steam ID (not just username) to get subscribed items.
-        This method retrieves the correct URL with the Steam ID.
-
-        Returns:
-            The base URL with the proper Steam ID
-        """
-        # url = f'https://steamcommunity.com/id/{self._user.username}/myworkshopfiles/?appid={self._app_id}&browsefilter=mysubscriptions&p=1&numberpage=30'
-        url = f'https://steamcommunity.com/id/{self._user.steam_id}/myworkshopfiles/?appid={self._app_id}&browsefilter=mysubscriptions'
-        # url = 'https://steamcommunity.com/id/marakai666/myworkshopfiles/?appid=346110&browsefilter=mysubscriptions'
-        # url = 'https://steamcommunity.com/id/76561197971835915/myworkshopfiles/?appid=346110&browsefilter=mysubscriptions'
-        response = self._user.session.get(url)
-        return response.url
-
     def _parse_data(self, *, text: str) -> int:
-        """
-        Parse the HTML data to extract workshop item information.
-
+        """Parse the HTML data to extract workshop item information.
         Args:
             text: The raw HTML data from the Steam Workshop page
-
         Returns:
             Number of entries found (0 indicates no more results)
         """

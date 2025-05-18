@@ -18,6 +18,7 @@ classifiers = [
 python = "^3.11"
 bs4 = "*"
 steam = "*"
+tomli = "*"
 
 [tool.poetry.scripts]
 steamscraper = "steamscraper.main:main"
