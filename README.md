@@ -21,12 +21,42 @@ optional arguments:
   -h, --help           show this help message and exit
   -v, --version        show program's version number and exit
   --config CONFIG      Path to the configuration file (default: steam-credentials.conf)
-  --appid APPID        The Steam Workshop App ID, which you need to figure out. Default is 346110 for Ark Survival Evolved
   --arkmanager         Issue list in Arkmanager instance config format
 ```
 
 #### Build and Installation
 
 1. Clone Repo
-2. Build source dist with `python3 setup.py sdist`
-3. Install with `pip3 install dist/<name of created tarball>`
+2. If you have `make` installed
+   - `make wheel`; or if you're brave
+   - `make install` (will install into --user)
+3. If you don't have `make`, inspect the `Makefile` to run the individual steps from init->wheel->install
+
+#### Testing
+
+`make tests`
+
+or run the command under that target in the `Makefile`
+
+#### Configuration
+
+The configuration file uses TOML.
+
+```toml
+# Steam credentials configuration file
+
+# Steam Workshop App ID (default is 346110 for Ark Survival Evolved)
+appid = "123456"
+
+# Steam user ID (mandatory)
+steamlogin = "mylogin"
+
+# Steam username (mandatory)
+username = "myusername"
+
+# Steam password (mandatory)
+password = "mypassword"
+
+# Steam ID (mandatory)
+steamid = "mysteamid"
+```

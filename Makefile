@@ -26,4 +26,4 @@ clean:
 
 # Install the built package from wheel (depends on wheel and tests)
 install: wheel tests
-	pip install --force-reinstall dist/*.whl
+	pip install --user --force-reinstall dist/*.whl || pip install --force-reinstall dist/*.whl
