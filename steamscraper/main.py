@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import argparse
-from steamscraper.steamapi import SteamScraper
-from steamscraper.config import SteamConfig
+from steamscraper.steamapi import Scraper
+from steamscraper.config import ScraperConfig
 from importlib.metadata import version as get_version
 
 try:
@@ -34,8 +34,8 @@ def args_handler():
 def main():
     args, _ = args_handler()
     try:
-        config = SteamConfig(config_file=args.config)
-        steam = SteamScraper(config=config)
+        config = ScraperConfig(config_file=args.config)
+        steam = Scraper(config=config)
         res = steam.subscription_data()
         for k, v in res.items():
             if args.arkmanager:

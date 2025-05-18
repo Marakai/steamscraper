@@ -1,4 +1,4 @@
-from steamscraper.steamapi import SteamScraper
+from steamscraper.steamapi import Scraper
 from importlib.metadata import version as get_version
 
 try:
@@ -6,4 +6,4 @@ try:
 except Exception:
     __version__ = "unknown"
 
-__all__ = ["SteamScraper", "__version__"]
+__all__ = ["Scraper", "__version__"]

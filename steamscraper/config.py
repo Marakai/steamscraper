@@ -6,7 +6,7 @@ from typing import Dict
 from steamscraper.constants import ARK_SURVIVAL_EVOLVED_APPID
 
 
-class SteamConfig:
+class ScraperConfig:
     """Configuration class for Steam credentials and settings.
     Reads a TOML configuration file, provides access to values as properties,
     and validates that all mandatory fields are present.

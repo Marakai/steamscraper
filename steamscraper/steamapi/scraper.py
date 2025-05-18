@@ -3,18 +3,18 @@
 import steam.webauth as wa
 from typing import Dict
 from bs4 import BeautifulSoup
-from steamscraper.config import SteamConfig
+from steamscraper.config import ScraperConfig
 from steamscraper.steamapi.steamguard import get_steamguard_code
 
 
-class SteamScraper:
+class Scraper:
     """A class to scrape Steam Workshop for subscribed addons.
     Authenticates with Steam and retrieves information about subscribed workshop items."""
 
-    def __init__(self, config: SteamConfig):
-        """Initialize the SteamScraper with configuration.
+    def __init__(self, config: ScraperConfig):
+        """Initialize the Scraper with configuration.
         Args:
-            config: SteamConfig object containing authentication details and settings
+            config: ScraperConfig object containing authentication details and settings
         """
 
         self._config = config
@@ -34,22 +34,20 @@ class SteamScraper:
         url_steamid = f'https://steamcommunity.com/id/{self._config.steamid}/myworkshopfiles/?appid={self._config.appid}&browsefilter=mysubscriptions'
         url_username = f'https://steamcommunity.com/id/{self._config.username}/myworkshopfiles/?appid={self._config.appid}&browsefilter=mysubscriptions'
 
+        self._parse_loop(url_steamid)
+        self._parse_loop(url_username)
+        return self._results
+
+    def _parse_loop(self, url: str) -> int:
         page = 1
         while True:
-            base_url_steamid = f'{url_steamid}&p={page}'
-            base_url_username = f'{url_username}&p={page}'
-            response_steamid = self._session.get(base_url_steamid)
-            response_username = self._session.get(base_url_username)
-
-            counter_steamid = self._parse_data(text=response_steamid.text)
-            if counter_steamid == 0:
+            work_url = f'{url}&p={page}'
+            response = self._session.get(work_url)
+            counter = self._parse_data(text=response.text)
+            if counter == 0:
                 break
             page += 1
-            counter_username = self._parse_data(text=response_username.text)
-            if counter_username == 0:
-                break
-            page += 1
-        return self._results
+        return counter
 
     def _parse_data(self, *, text: str) -> int:
         """Parse the HTML data to extract workshop item information.
