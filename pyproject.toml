@@ -1,9 +1,12 @@
-[tool.poetry]
+[project]
 name = "steamscraper"
-version = "0.2.0"
+version = "0.2.1"
 description = "Extract all subscribed Steam Workshop mods for Ark Survival Evolved"
-authors = ["Michael Hoffmann <michaelh@centaur.au>"]
+authors = [
+    {name = "Michael Hoffmann", email = "michaelh@centaur.au"}
+]
 readme = "README.md"
+requires-python = ">=3.11"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -13,19 +16,46 @@ classifiers = [
     "Topic :: Utilities",
     "Typing :: Typed",
 ]
+dependencies = [
+    "bs4",
+    "steam",
+    "tomli",
+]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-bs4 = "*"
-steam = "*"
-tomli = "*"
-
-[tool.poetry.scripts]
+[project.scripts]
 steamscraper = "steamscraper.main:main"
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.0.0"
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "ruff>=0.1.0",
+]
+
+[tool.ruff]
+# Enable flake8-bugbear (`B`) rules.
+select = ["E", "F", "B", "I", "W"]
+ignore = []
+
+# Same as Black.
+line-length = 88
+indent-width = 4
+
+# Assume Python 3.11
+target-version = "py311"
+
+[tool.ruff.format]
+# Use double quotes for strings.
+quote-style = "double"
+
+# Indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Automatically detect the appropriate line ending.
+line-ending = "auto"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

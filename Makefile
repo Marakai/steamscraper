@@ -1,18 +1,18 @@
 # Makefile for steamscraper project
 
-.PHONY: init wheel tests clean install
+.PHONY: init wheel tests clean install lint
 
-# Install all dependencies via Poetry
+# Install all dependencies via uv
 init:
-	poetry install
+	uv sync
 
 # Create the wheel package (depends on init)
 wheel: init
-	poetry build --format wheel
+	uv build
 
 # Run pytest unit tests (depends on init)
 tests: init
-	poetry run pytest || true
+	uvx pytest || true
 
 # Clean up the repository
 clean:
@@ -26,4 +26,9 @@ clean:
 
 # Install the built package from wheel (depends on wheel and tests)
 install: wheel tests
-	pip install --user --force-reinstall dist/*.whl || pip install --force-reinstall dist/*.whl
+	uv pip install --user --force-reinstall dist/*.whl || uv pip install --force-reinstall dist/*.whl
+
+# Run ruff linter and formatter
+lint: init
+	uvx ruff check .
+	uvx ruff format .

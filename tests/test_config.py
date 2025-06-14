@@ -52,17 +52,21 @@ def test_init_with_nonexistent_file():
 
 def test_init_with_invalid_config(invalid_toml_content):
     """Test initialization with an invalid configuration file (missing mandatory fields)."""
+    # Create an invalid config with only appid
+    invalid_config = {"appid": ARK_SURVIVAL_EVOLVED_APPID}
+
     with patch("builtins.open", mock_open(read_data=invalid_toml_content)):
         with patch("os.path.exists", return_value=True):
-            with pytest.raises(ValueError) as excinfo:
-                ScraperConfig(config_file="invalid.conf")
+            with patch("tomli.load", return_value=invalid_config):
+                with pytest.raises(ValueError) as excinfo:
+                    ScraperConfig(config_file="invalid.conf")
 
-            # Verify error message contains missing fields
-            assert "Missing mandatory fields" in str(excinfo.value)
-            assert "steamlogin" in str(excinfo.value)
-            assert "password" in str(excinfo.value)
-            assert "username" in str(excinfo.value)
-            assert "steamid" in str(excinfo.value)
+                # Verify error message contains missing fields
+                assert "Missing mandatory fields" in str(excinfo.value)
+                assert "steamlogin" in str(excinfo.value)
+                assert "password" in str(excinfo.value)
+                assert "username" in str(excinfo.value)
+                assert "steamid" in str(excinfo.value)
 
 
 def test_custom_appid(valid_toml_content):
@@ -72,12 +76,22 @@ def test_custom_appid(valid_toml_content):
         b'appid = "123456"'
     )
 
+    # Create a config with custom appid
+    custom_config = {
+        "appid": "123456",
+        "steamlogin": "test_steamlogin",
+        "password": "test_password",
+        "username": "test_username",
+        "steamid": "test_steamid"
+    }
+
     with patch("builtins.open", mock_open(read_data=custom_toml)):
         with patch("os.path.exists", return_value=True):
-            config = ScraperConfig(config_file="test.conf")
+            with patch("tomli.load", return_value=custom_config):
+                config = ScraperConfig(config_file="test.conf")
 
-            # Verify custom appid
-            assert config.appid == "123456"
+                # Verify custom appid
+                assert config.appid == "123456"
 
 
 def test_default_appid(valid_toml_content):
@@ -87,9 +101,18 @@ def test_default_appid(valid_toml_content):
         b''
     )
 
+    # Create a config without appid
+    default_config = {
+        "steamlogin": "test_steamlogin",
+        "password": "test_password",
+        "username": "test_username",
+        "steamid": "test_steamid"
+    }
+
     with patch("builtins.open", mock_open(read_data=custom_toml)):
         with patch("os.path.exists", return_value=True):
-            config = ScraperConfig(config_file="test.conf")
+            with patch("tomli.load", return_value=default_config):
+                config = ScraperConfig(config_file="test.conf")
 
-            # Verify default appid
-            assert config.appid == ARK_SURVIVAL_EVOLVED_APPID
+                # Verify default appid
+                assert config.appid == ARK_SURVIVAL_EVOLVED_APPID
